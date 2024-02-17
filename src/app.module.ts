@@ -1,11 +1,22 @@
 import { Module } from '@nestjs/common';
-import { HealthController } from './controllers/health.controller';
 import { LoggerModule } from 'nestjs-pino';
-import { HealthService } from './services/health.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import config from './config';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [LoggerModule.forRoot()],
-  controllers: [HealthController],
-  providers: [HealthService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, load: [config] }),
+    LoggerModule.forRoot(),
+    SequelizeModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('dbUri'),
+      }),
+      inject: [ConfigService],
+    }),
+    HealthModule,
+  ],
 })
 export class AppModule {}
