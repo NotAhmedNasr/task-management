@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: bitnami/postgresql:16
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_USERNAME=db_user
+      - POSTGRESQL_PASSWORD=db_user_password
+      - POSTGRESQL_DATABASE=task_management
+      - POSTGRESQL_POSTGRES_PASSWORD=db_root_password
+    volumes:
+      - postgres-data:/bitnami/postgresql
+
+volumes:
+  postgres-data:
+    driver: local
