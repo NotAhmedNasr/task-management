@@ -14,6 +14,10 @@ import { UserModule } from './user/user.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('dbUri'),
+        modelMatch: (filename, member) => {
+          return filename.split('.model')[0] === member.toLowerCase();
+        },
+        models: [__dirname + '/models/**.model.**'],
       }),
       inject: [ConfigService],
     }),
