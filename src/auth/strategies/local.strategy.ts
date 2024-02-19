@@ -16,8 +16,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       'login',
     );
 
-    if (!user || !(await user.validatePassword(password))) {
+    if (!user || !(await user.validatePassword(password)) || user.blocked) {
       throw new UnauthorizedException();
+    }
+
+    if (!user.emailVerified) {
+      throw new UnauthorizedException('email verification required');
     }
 
     return user;

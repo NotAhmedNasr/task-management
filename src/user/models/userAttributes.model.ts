@@ -17,6 +17,7 @@ import {
 
 @DefaultScope(() => ({
   attributes: [
+    'id',
     'username',
     'email',
     'firstName',
@@ -79,6 +80,10 @@ export class UserAttributes extends Model {
   @Default(false)
   @Column(DataType.BOOLEAN)
   blocked: boolean;
+
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  confirmationToken: string;
 
   // hooks
   @BeforeCreate

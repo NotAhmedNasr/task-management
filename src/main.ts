@@ -8,6 +8,6 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.useGlobalPipes(new ValidationPipe());
   app.enableShutdownHooks();
-  return app.listen(3000);
+  return app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

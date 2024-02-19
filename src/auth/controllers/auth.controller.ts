@@ -2,7 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  NotFoundException,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -11,12 +14,18 @@ import { UserService } from '../../user/services/user.service';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
 import { RegisterDTO } from '../dto/register.dto';
 import { AuthenticatedRequest } from '../types';
+import { MailNotificationService } from '../../notification/services/mail.service';
+import { EmailNotification } from 'src/notification/classes/notification';
+import { MailTemplateFactory } from 'src/notification/classes/mailTemplateFactory';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly mailService: MailNotificationService,
+    private readonly configService: ConfigService,
   ) {}
   @UseGuards(LocalAuthGuard)
   @Post('/login')
@@ -43,11 +52,42 @@ export class AuthController {
     }
 
     const user = await this.userService.create(registerDTO);
-    const token = await this.authService.getTokenForUser(user);
-
+    const confirmation = new EmailNotification(
+      {
+        to: user.email,
+        from: this.mailService.smtpOptions.from,
+        subject: 'Email Confirmation',
+        html: await MailTemplateFactory.confirmation(
+          user,
+          `${this.configService.get<string>('host')}:${this.configService.get<string>('port')}`,
+        ),
+      },
+      this.mailService.getMailTransporter(),
+    );
+    // TODO handle confirmation sending failure
+    confirmation
+      .send()
+      .catch((err) =>
+        console.error('failed to send confirmation message', err),
+      );
     return {
-      token,
-      user: user.toJSON(),
+      message: 'email verification required',
+    };
+  }
+
+  @Get('/verify')
+  async confirmEmail(@Query('token') cToken: string) {
+    const user = await this.userService.findByConfirmationToken(cToken);
+    if (!user) {
+      throw new NotFoundException();
+    }
+    if (user.emailVerified) {
+      throw new BadRequestException('Email is already verified');
+    }
+    user.emailVerified = true;
+    await user.save();
+    return {
+      message: 'success',
     };
   }
 }

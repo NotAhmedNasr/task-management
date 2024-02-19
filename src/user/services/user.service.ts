@@ -36,6 +36,14 @@ export class UserService {
     });
   }
 
+  findByConfirmationToken(confirmationToken: string) {
+    return this.userModel.findOne({
+      where: {
+        confirmationToken,
+      },
+    });
+  }
+
   create(registerDTO: RegisterDTO) {
     return this.userModel.create({ ...registerDTO });
   }
