@@ -1,6 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from '../services/user.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
+import { AuthenticatedRequest } from 'src/auth/types';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -10,13 +21,17 @@ export class UserController {
     return res;
   }
 
-  @Get('/:id')
-  findOne() {
-    return this.userService.findById();
+  @Get('/me')
+  findMe(@Request() req: AuthenticatedRequest) {
+    return req.user.toJSON();
   }
 
-  @Get('/me')
-  me() {
-    return this.userService.findById();
+  @Get('/:id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.userService.findById(id);
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user.toJSON();
   }
 }

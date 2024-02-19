@@ -3,12 +3,14 @@ import {
   Body,
   Controller,
   Post,
-  UnauthorizedException,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { UserService } from '../services/user.service';
-import { RegisterDTO } from '../dtos/register.dto';
-import { LoginDTO } from '../dtos/login.dto';
+import { UserService } from '../../user/services/user.service';
+import { LocalAuthGuard } from '../guards/localAuth.guard';
+import { RegisterDTO } from '../dto/register.dto';
+import { AuthenticatedRequest } from '../types';
 
 @Controller('auth')
 export class AuthController {
@@ -16,23 +18,14 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
   ) {}
+  @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async login(@Body() loginDTO: LoginDTO) {
-    const user = await this.userService.findByUsernameOrEmail(
-      loginDTO.identifier,
-      loginDTO.identifier,
-      'login',
-    );
-
-    if (!user || !(await user.validatePassword(loginDTO.password))) {
-      throw new UnauthorizedException();
-    }
-
-    const token = await this.authService.getTokenForUser(user);
+  async login(@Request() req: AuthenticatedRequest) {
+    const token = await this.authService.getTokenForUser(req.user);
 
     return {
       token,
-      user: user.toJSON(),
+      user: req.user.toJSON(),
     };
   }
 
@@ -45,9 +38,7 @@ export class AuthController {
 
     if (existing?.username === registerDTO.username) {
       throw new BadRequestException('username is already taken!');
-    }
-
-    if (existing?.email === registerDTO.email) {
+    } else if (existing?.email === registerDTO.email) {
       throw new BadRequestException('email is already taken!');
     }
 

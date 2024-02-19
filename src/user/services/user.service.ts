@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UserAttributes } from '../models/userAttributes.model';
-import { RegisterDTO } from '../dtos/register.dto';
+import { RegisterDTO } from '../../auth/dto/register.dto';
 import { Op } from 'sequelize';
 
 @Injectable()
@@ -17,9 +17,8 @@ export class UserService {
     return users;
   }
 
-  findById() {
-    // TODO
-    return {};
+  findById(id: number) {
+    return this.userModel.findOne({ where: { id } });
   }
 
   findByUsernameOrEmail(username: string, email: string, scope?: string) {
