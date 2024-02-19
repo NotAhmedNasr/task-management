@@ -5,74 +5,98 @@ import {
   Column,
   PrimaryKey,
   AutoIncrement,
-  NotNull,
   Unique,
   DataType,
   AllowNull,
   IsEmail,
   BeforeCreate,
+  Default,
+  DefaultScope,
+  Scopes,
 } from 'sequelize-typescript';
 
+@DefaultScope(() => ({
+  attributes: [
+    'username',
+    'email',
+    'firstName',
+    'lastName',
+    'emailVerified',
+    'blocked',
+  ],
+}))
+@Scopes(() => ({
+  login: {},
+}))
 @Table({
-  tableName: 'user',
+  tableName: 'user_attributes',
   timestamps: true,
 })
-export class User extends Model {
+export class UserAttributes extends Model {
   // attributes
-  @Column
-  @PrimaryKey
-  @Unique
-  @NotNull
   @AutoIncrement
+  @PrimaryKey
+  @Column
   id: number;
 
+  @AllowNull(false)
+  @Unique
   @Column({
     type: DataType.STRING(100),
   })
-  @NotNull
-  @Unique
   username: string;
 
+  @AllowNull
   @Column({
     type: DataType.STRING(300),
   })
-  @AllowNull
   password: string;
 
+  @AllowNull(false)
+  @Unique
+  @IsEmail
   @Column({
     type: DataType.STRING(300),
   })
-  @NotNull
-  @Unique
-  @IsEmail
   email: string;
 
+  @AllowNull(false)
   @Column({
     type: DataType.STRING(100),
   })
-  @NotNull
   firstName: string;
 
+  @AllowNull(false)
   @Column({
     type: DataType.STRING(100),
   })
-  @NotNull
   lastName: string;
+
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  emailVerified: boolean;
+
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  blocked: boolean;
 
   // hooks
   @BeforeCreate
-  async hashPassword(instance: User) {
+  static async hashPassword(instance: UserAttributes) {
     instance.password = await bcrypt.hash(instance.password, 3);
   }
 
   // instance methods
   validatePassword(password: string) {
+    if (!this.password) {
+      throw new Error('no password');
+    }
     return bcrypt.compare(password, this.password);
   }
 
-  sanitize() {
-    if (this.password) {
-      delete this.password;
-    }
+  public toJSON() {
+    const result = super.toJSON();
+    if (result.password) delete result.password;
+    return result;
   }
 }

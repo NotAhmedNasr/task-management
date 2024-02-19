@@ -5,17 +5,18 @@ import { UserService } from '../services/user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Get('/')
-  findMany() {
-    return this.userService.findMany();
+  async findMany() {
+    const res = await this.userService.findMany();
+    return res;
   }
 
   @Get('/:id')
   findOne() {
-    return this.userService.findOne();
+    return this.userService.findById();
   }
 
   @Get('/me')
   me() {
-    return this.userService.findOne();
+    return this.userService.findById();
   }
 }

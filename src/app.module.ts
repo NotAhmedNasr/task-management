@@ -9,7 +9,13 @@ import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
-    LoggerModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          target: 'pino-pretty',
+        },
+      },
+    }),
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -17,7 +23,10 @@ import { UserModule } from './user/user.module';
         modelMatch: (filename, member) => {
           return filename.split('.model')[0] === member.toLowerCase();
         },
-        models: [__dirname + '/models/**.model.**'],
+        autoLoadModels: true,
+        sync: {
+          alter: configService.get<string>('nodeEnv') !== 'production',
+        },
       }),
       inject: [ConfigService],
     }),
