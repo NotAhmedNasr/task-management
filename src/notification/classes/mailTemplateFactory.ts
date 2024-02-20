@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { UserAttributes } from '../../user/models/userAttributes.model';
+import { UserAttributes } from 'src/user/models/userAttributes.model';
 
 export abstract class MailTemplateFactory {
   static async confirmation(user: UserAttributes, domain: string) {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UserAttributes } from '../models/userAttributes.model';
-import { RegisterDTO } from '../../auth/dto/register.dto';
+import { RegisterDTO } from 'src/auth/dto/register.dto';
 import { Op } from 'sequelize';
 
 @Injectable()

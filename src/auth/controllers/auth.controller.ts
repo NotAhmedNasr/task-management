@@ -10,11 +10,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { UserService } from '../../user/services/user.service';
+import { UserService } from 'src/user/services/user.service';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
 import { RegisterDTO } from '../dto/register.dto';
-import { AuthenticatedRequest } from '../types';
-import { MailNotificationService } from '../../notification/services/mail.service';
+import { AuthenticatedRequest } from 'src/types';
+import { MailNotificationService } from 'src/notification/services/mail.service';
 import { EmailNotification } from 'src/notification/classes/notification';
 import { MailTemplateFactory } from 'src/notification/classes/mailTemplateFactory';
 import { ConfigService } from '@nestjs/config';

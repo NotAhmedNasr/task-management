@@ -8,8 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
-import { AuthenticatedRequest } from 'src/auth/types';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { AuthenticatedRequest } from 'src/types';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
