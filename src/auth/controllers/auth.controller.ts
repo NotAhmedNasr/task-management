@@ -18,6 +18,7 @@ import { MailNotificationService } from 'src/notification/services/mail.service'
 import { EmailNotification } from 'src/notification/classes/notification';
 import { MailTemplateFactory } from 'src/notification/classes/mailTemplateFactory';
 import { ConfigService } from '@nestjs/config';
+import { GoogleAuthGuard } from '../guards/google.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -85,9 +86,26 @@ export class AuthController {
       throw new BadRequestException('Email is already verified');
     }
     user.emailVerified = true;
+    user.confirmationToken = null;
     await user.save();
     return {
       message: 'success',
+    };
+  }
+
+  // TODO generalize oauth2 for all providers
+  @UseGuards(GoogleAuthGuard)
+  @Get('/oauth2/google')
+  async googleLogin() {}
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('/oauth2/redirect/google')
+  async googleCallback(@Request() req: AuthenticatedRequest) {
+    const token = await this.authService.getTokenForUser(req.user);
+
+    return {
+      token,
+      user: req.user.toJSON(),
     };
   }
 }

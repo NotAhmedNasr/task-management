@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { UserAttributes } from '../models/userAttributes.model';
 import { RegisterDTO } from 'src/auth/dto/register.dto';
 import { Op } from 'sequelize';
+import { AuthProviderType } from 'src/auth/types';
 
 @Injectable()
 export class UserService {
@@ -36,6 +37,14 @@ export class UserService {
     });
   }
 
+  findByEmail(email: string) {
+    return this.userModel.findOne({
+      where: {
+        email,
+      },
+    });
+  }
+
   findByConfirmationToken(confirmationToken: string) {
     return this.userModel.findOne({
       where: {
@@ -44,7 +53,13 @@ export class UserService {
     });
   }
 
-  create(registerDTO: RegisterDTO) {
-    return this.userModel.create({ ...registerDTO });
+  create(
+    registerDTO: RegisterDTO,
+    type: AuthProviderType = AuthProviderType.LOCAL,
+  ) {
+    return this.userModel.create({
+      ...registerDTO,
+      emailVerified: type !== AuthProviderType.LOCAL,
+    });
   }
 }

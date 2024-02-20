@@ -11,4 +11,9 @@ export default () => ({
     password: process.env.MAIL_PROVIDER_PASSWORD,
     from: process.env.MAIL_PROVIDER_FROM,
   },
+  googleOauth: {
+    clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+  },
+  clientUrl: process.env.CLIENT_URL,
 });

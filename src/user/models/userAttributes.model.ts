@@ -13,7 +13,9 @@ import {
   Default,
   DefaultScope,
   Scopes,
+  HasMany,
 } from 'sequelize-typescript';
+import { AuthProviderAttributes } from 'src/auth/models/authProviderAttributes.model';
 
 @DefaultScope(() => ({
   attributes: [
@@ -85,16 +87,21 @@ export class UserAttributes extends Model {
   @Column(DataType.UUID)
   confirmationToken: string;
 
+  @HasMany(() => AuthProviderAttributes, { onDelete: 'CASCADE' })
+  authProviders: AuthProviderAttributes[];
+
   // hooks
   @BeforeCreate
   static async hashPassword(instance: UserAttributes) {
-    instance.password = await bcrypt.hash(instance.password, 3);
+    if (instance.password) {
+      instance.password = await bcrypt.hash(instance.password, 3);
+    }
   }
 
   // instance methods
-  validatePassword(password: string) {
+  async validatePassword(password: string) {
     if (!this.password) {
-      throw new Error('no password');
+      return false;
     }
     return bcrypt.compare(password, this.password);
   }
