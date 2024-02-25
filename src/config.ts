@@ -1,6 +1,7 @@
 export default () => ({
   host: process.env.HOST ?? 'http://localhost',
   port: process.env.PORT ?? 3000,
+  domain: process.env.domain ?? 'http://localhost:3000',
   dbUri: process.env.POSTGRESQL_URL ?? 'postgres://localhost:5432',
   nodeEnv: process.env.NODE_ENV ?? 'production',
   jwtSecret: process.env.JWT_SECRET ?? 'secret',

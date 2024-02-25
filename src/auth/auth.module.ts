@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { AuthController } from './controllers/auth.controller';
+import { LocalAuthController } from './controllers/local.controller';
 import { AuthService } from './services/auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -11,6 +11,7 @@ import { NotificationModule } from '../notification/notification.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AuthProviderAttributes } from './models/authProviderAttributes.model';
 import { AuthProviderService } from './services/authProvider.service';
+import { OAuth2Controller } from './controllers/oauth.controller';
 
 @Global()
 @Module({
@@ -29,7 +30,7 @@ import { AuthProviderService } from './services/authProvider.service';
     UserModule,
     NotificationModule,
   ],
-  controllers: [AuthController],
+  controllers: [LocalAuthController, OAuth2Controller],
   providers: [
     AuthService,
     LocalStrategy,

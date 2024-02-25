@@ -108,7 +108,7 @@ export class UserAttributes extends Model {
 
   public toJSON() {
     const result = super.toJSON();
-    if (result.password) delete result.password;
+    delete result.password;
     return result;
   }
 }

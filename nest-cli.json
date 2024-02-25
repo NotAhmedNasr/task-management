@@ -5,8 +5,9 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      "**/templates/*"
-    ]
+      "**/*.html"
+    ],
+    "watchAssets": true
   },
   "watchOptions": {
     "watchFile": "fixedPollingInterval"

@@ -13,6 +13,6 @@ export class EmailNotification extends NotificationBase {
     super();
   }
   async send() {
-    await this.transporter.sendMail(this.message);
+    return this.transporter.sendMail(this.message);
   }
 }

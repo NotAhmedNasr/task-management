@@ -18,10 +18,9 @@ import { MailNotificationService } from 'src/notification/services/mail.service'
 import { EmailNotification } from 'src/notification/classes/notification';
 import { MailTemplateFactory } from 'src/notification/classes/mailTemplateFactory';
 import { ConfigService } from '@nestjs/config';
-import { GoogleAuthGuard } from '../guards/google.guard';
 
-@Controller('auth')
-export class AuthController {
+@Controller('local')
+export class LocalAuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
@@ -58,9 +57,9 @@ export class AuthController {
         to: user.email,
         from: this.mailService.smtpOptions.from,
         subject: 'Email Confirmation',
-        html: await MailTemplateFactory.confirmation(
-          user,
-          `${this.configService.get<string>('host')}:${this.configService.get<string>('port')}`,
+        html: await MailTemplateFactory.emailConfirmation(
+          `${user.firstName} ${user.lastName}`,
+          `${this.configService.get<string>('domain')}/local/verify?token=${user.confirmationToken}`,
         ),
       },
       this.mailService.getMailTransporter(),
@@ -68,6 +67,7 @@ export class AuthController {
     // TODO handle confirmation sending failure
     confirmation
       .send()
+      .then(console.log)
       .catch((err) =>
         console.error('failed to send confirmation message', err),
       );
@@ -90,22 +90,6 @@ export class AuthController {
     await user.save();
     return {
       message: 'success',
-    };
-  }
-
-  // TODO generalize oauth2 for all providers
-  @UseGuards(GoogleAuthGuard)
-  @Get('/oauth2/google')
-  async googleLogin() {}
-
-  @UseGuards(GoogleAuthGuard)
-  @Get('/oauth2/redirect/google')
-  async googleCallback(@Request() req: AuthenticatedRequest) {
-    const token = await this.authService.getTokenForUser(req.user);
-
-    return {
-      token,
-      user: req.user.toJSON(),
     };
   }
 }
