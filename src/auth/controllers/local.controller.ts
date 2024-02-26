@@ -59,7 +59,7 @@ export class LocalAuthController {
         subject: 'Email Confirmation',
         html: await MailTemplateFactory.emailConfirmation(
           `${user.firstName} ${user.lastName}`,
-          `${this.configService.get<string>('domain')}/local/verify?token=${user.confirmationToken}`,
+          `${this.configService.get<string>('clientUrl')}/auth/verifyEmail?token=${user.confirmationToken}`,
         ),
       },
       this.mailService.getMailTransporter(),
@@ -86,7 +86,6 @@ export class LocalAuthController {
       throw new BadRequestException('Email is already verified');
     }
     user.emailVerified = true;
-    user.confirmationToken = null;
     await user.save();
     return {
       message: 'success',
