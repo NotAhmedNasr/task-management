@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-google-oauth20';
-import { AuthProviderType, GoogleProfile } from '../types';
+import { AuthProviderType, GoogleProfile, LoginFailureReason } from '../types';
 import { UserService } from 'src/user/services/user.service';
 import { AuthProviderService } from '../services/authProvider.service';
+import { LoginHistoryService } from '../services/loginHistory.service';
+import { Request } from 'express';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -12,16 +14,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     configService: ConfigService,
     private userService: UserService,
     private authProviderService: AuthProviderService,
+    private loginHistoryService: LoginHistoryService,
   ) {
     super({
       clientID: configService.get<string>('googleOauth.clientID'),
       clientSecret: configService.get<string>('googleOauth.clientSecret'),
       callbackURL: `${configService.get<string>('clientUrl')}/oauth2/redirect/google`,
       scope: ['email', 'profile'],
+      passReqToCallback: true,
     });
   }
 
   async validate(
+    req: Request,
     _accessToken: string,
     _refreshToken: string,
     profile: GoogleProfile,
@@ -51,10 +56,22 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         AuthProviderType.GOOGLE,
       ));
 
+    if (user.blocked) {
+      this.loginHistoryService.log(
+        user,
+        AuthProviderType.GOOGLE,
+        req.ip,
+        false,
+        LoginFailureReason.BLOCK,
+      );
+      throw new ForbiddenException('blocked');
+    }
+
+    this.loginHistoryService.log(user, AuthProviderType.GOOGLE, req.ip, true);
+
     if (!authProvider.userId) {
       authProvider.userId = user.id;
     }
-    authProvider.lastLoginAt = new Date();
     await authProvider.save();
 
     return user;

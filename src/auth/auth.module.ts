@@ -12,11 +12,13 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { AuthProviderAttributes } from './models/authProviderAttributes.model';
 import { AuthProviderService } from './services/authProvider.service';
 import { OAuth2Controller } from './controllers/oauth.controller';
+import { LoginAttempt } from './models/loginAttempt.model';
+import { LoginHistoryService } from './services/loginHistory.service';
 
 @Global()
 @Module({
   imports: [
-    SequelizeModule.forFeature([AuthProviderAttributes]),
+    SequelizeModule.forFeature([AuthProviderAttributes, LoginAttempt]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -37,6 +39,7 @@ import { OAuth2Controller } from './controllers/oauth.controller';
     JwtStrategy,
     GoogleStrategy,
     AuthProviderService,
+    LoginHistoryService,
   ],
 })
 export class AuthModule {}

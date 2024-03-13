@@ -3,12 +3,12 @@ import {
   Body,
   Controller,
   Get,
-  NotFoundException,
   Post,
   Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../services/auth.service';
 import { UserService } from 'src/user/services/user.service';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
@@ -17,7 +17,9 @@ import { AuthenticatedRequest } from 'src/types';
 import { MailNotificationService } from 'src/notification/services/mail.service';
 import { EmailNotification } from 'src/notification/classes/notification';
 import { MailTemplateFactory } from 'src/notification/classes/mailTemplateFactory';
-import { ConfigService } from '@nestjs/config';
+import { LoginHistoryService } from '../services/loginHistory.service';
+import { AuthProviderType } from '../types';
+import { verifyDTO } from '../dto/verify.dto';
 
 @Controller('local')
 export class LocalAuthController {
@@ -26,12 +28,18 @@ export class LocalAuthController {
     private readonly userService: UserService,
     private readonly mailService: MailNotificationService,
     private readonly configService: ConfigService,
+    private readonly loginHistoryService: LoginHistoryService,
   ) {}
   @UseGuards(LocalAuthGuard)
   @Post('/login')
   async login(@Request() req: AuthenticatedRequest) {
     const token = await this.authService.getTokenForUser(req.user);
-
+    this.loginHistoryService.log(
+      req.user,
+      AuthProviderType.LOCAL,
+      req.ip,
+      true,
+    );
     return {
       token,
       user: req.user.toJSON(),
@@ -77,10 +85,10 @@ export class LocalAuthController {
   }
 
   @Get('/verify')
-  async confirmEmail(@Query('token') cToken: string) {
-    const user = await this.userService.findByConfirmationToken(cToken);
+  async confirmEmail(@Query() query: verifyDTO) {
+    const user = await this.userService.findByConfirmationToken(query.token);
     if (!user) {
-      throw new NotFoundException();
+      throw new BadRequestException('invalid token');
     }
     if (user.emailVerified) {
       throw new BadRequestException('Email is already verified');

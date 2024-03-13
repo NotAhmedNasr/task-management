@@ -10,13 +10,14 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { UserAttributes } from 'src/user/models/userAttributes.model';
-import { AuthProviderType } from '../types';
+import { AuthProviderType, LoginFailureReason } from '../types';
 
 @Table({
-  tableName: 'provider_attributes',
-  timestamps: true,
+  tableName: 'login_attempt',
+  createdAt: 'time',
+  updatedAt: false,
 })
-export class AuthProviderAttributes extends Model {
+export class LoginAttempt extends Model {
   // attributes
   @AutoIncrement
   @PrimaryKey
@@ -30,17 +31,24 @@ export class AuthProviderAttributes extends Model {
   })
   type: AuthProviderType;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column({
-    type: DataType.STRING(300),
+    type: DataType.BOOLEAN,
   })
-  identifier: string;
+  success: boolean;
 
   @AllowNull(true)
   @Column({
-    type: DataType.STRING(300),
+    type: DataType.INET,
   })
-  email: string;
+  address: string;
+
+  @AllowNull(true)
+  @Column({
+    type: DataType.ENUM,
+    values: Object.values(LoginFailureReason),
+  })
+  failureReason: string;
 
   @AllowNull(false)
   @ForeignKey(() => UserAttributes)

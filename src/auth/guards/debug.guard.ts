@@ -5,7 +5,7 @@ import { Request } from 'express';
 export class DebugGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request: Request = context.switchToHttp().getRequest();
-    console.log('🚀 ~ AuthGuard ~ canActivate ~ request:', request.query);
+    console.log('🚀 ~ AuthGuard ~ canActivate ~ request:', request);
     return true;
   }
 }

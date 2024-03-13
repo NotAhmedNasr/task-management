@@ -16,6 +16,7 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import { AuthProviderAttributes } from 'src/auth/models/authProviderAttributes.model';
+import { LoginAttempt } from 'src/auth/models/loginAttempt.model';
 
 @DefaultScope(() => ({
   attributes: [
@@ -90,6 +91,9 @@ export class UserAttributes extends Model {
   @HasMany(() => AuthProviderAttributes, { onDelete: 'CASCADE' })
   authProviders: AuthProviderAttributes[];
 
+  @HasMany(() => LoginAttempt, { onDelete: 'CASCADE' })
+  loginHistory: LoginAttempt[];
+
   // hooks
   @BeforeCreate
   static async hashPassword(instance: UserAttributes) {
@@ -109,6 +113,7 @@ export class UserAttributes extends Model {
   public toJSON() {
     const result = super.toJSON();
     delete result.password;
+    delete result.confirmationToken;
     return result;
   }
 }

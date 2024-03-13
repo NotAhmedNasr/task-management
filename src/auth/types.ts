@@ -22,3 +22,8 @@ export enum AuthProviderType {
   GOOGLE = 'google',
   LOCAL = 'local',
 }
+
+export enum LoginFailureReason {
+  INVALID_CREDENTIALS = 'invalid_credentials',
+  BLOCK = 'block',
+}
