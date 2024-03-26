@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { UserAttributes } from '../models/userAttributes.model';
 import { RegisterDTO } from 'src/auth/dto/register.dto';
 import { Op } from 'sequelize';
-import { AuthProviderType } from 'src/auth/types';
 
 @Injectable()
 export class UserService {
@@ -54,12 +53,12 @@ export class UserService {
   }
 
   create(
-    registerDTO: RegisterDTO,
-    type: AuthProviderType = AuthProviderType.LOCAL,
+    registerDTO: RegisterDTO & { confirmationToken?: string },
+    emailVerified = true,
   ) {
     return this.userModel.create({
       ...registerDTO,
-      emailVerified: type !== AuthProviderType.LOCAL,
+      emailVerified,
     });
   }
 }

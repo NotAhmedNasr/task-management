@@ -3,50 +3,57 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Ip,
   Post,
   Query,
-  Request,
   UseGuards,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../services/auth.service';
 import { UserService } from 'src/user/services/user.service';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
 import { RegisterDTO } from '../dto/register.dto';
-import { AuthenticatedRequest } from 'src/types';
-import { MailNotificationService } from 'src/notification/services/mail.service';
-import { EmailNotification } from 'src/notification/classes/notification';
-import { MailTemplateFactory } from 'src/notification/classes/mailTemplateFactory';
-import { LoginHistoryService } from '../services/loginHistory.service';
 import { AuthProviderType } from '../types';
 import { verifyDTO } from '../dto/verify.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LoginEvent, RegisterEvent } from '../events/events';
+import {
+  AuthModuleOptions,
+  InjectAuthOptions,
+} from '../auth.module-definition';
+import { User } from '../decorators/user.decorator';
+import { UserAttributes } from 'src/user/models/userAttributes.model';
 
 @Controller('local')
 export class LocalAuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly mailService: MailNotificationService,
-    private readonly configService: ConfigService,
-    private readonly loginHistoryService: LoginHistoryService,
+    private readonly emitter: EventEmitter2,
+    @InjectAuthOptions()
+    private readonly authOptions: AuthModuleOptions,
   ) {}
   @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async login(@Request() req: AuthenticatedRequest) {
-    const token = await this.authService.getTokenForUser(req.user);
-    this.loginHistoryService.log(
-      req.user,
-      AuthProviderType.LOCAL,
-      req.ip,
-      true,
+  async login(
+    @User() user: UserAttributes,
+    @Ip() ip: string,
+    @Headers('user-agent') agent: string,
+  ) {
+    const token = await this.authService.getTokenForUser(user);
+    new LoginEvent(user, AuthProviderType.LOCAL, ip, agent).publish(
+      this.emitter,
     );
     return {
       token,
-      user: req.user.toJSON(),
+      user: user.toJSON(),
     };
   }
 
   @Post('/register')
+  @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDTO: RegisterDTO) {
     const existing = await this.userService.findByUsernameOrEmail(
       registerDTO.username,
@@ -59,29 +66,23 @@ export class LocalAuthController {
       throw new BadRequestException('email is already taken!');
     }
 
-    const user = await this.userService.create(registerDTO);
-    const confirmation = new EmailNotification(
-      {
-        to: user.email,
-        from: this.mailService.smtpOptions.from,
-        subject: 'Email Confirmation',
-        html: await MailTemplateFactory.emailConfirmation(
-          `${user.firstName} ${user.lastName}`,
-          `${this.configService.get<string>('clientUrl')}/auth/verifyEmail?token=${user.confirmationToken}`,
-        ),
-      },
-      this.mailService.getMailTransporter(),
+    const user = await this.userService.create(
+      registerDTO,
+      !this.authOptions.requireEmailVerification,
     );
-    // TODO handle confirmation sending failure
-    confirmation
-      .send()
-      .then(console.log)
-      .catch((err) =>
-        console.error('failed to send confirmation message', err),
-      );
-    return {
-      message: 'email verification required',
-    };
+
+    new RegisterEvent(user, AuthProviderType.LOCAL).publish(this.emitter);
+
+    const response = this.authOptions.requireEmailVerification
+      ? {
+          code: 'EMAIL_VERIFICATION_REQUIRED',
+          message: 'email verification required',
+        }
+      : {
+          code: 'REGISTRATION_SUCCESS',
+          message: 'registration was successful',
+        };
+    return response;
   }
 
   @Get('/verify')

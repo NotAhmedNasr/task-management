@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -7,15 +7,15 @@ import { AuthService } from './services/auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { UserModule } from '../user/user.module';
-import { NotificationModule } from '../notification/notification.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AuthProviderAttributes } from './models/authProviderAttributes.model';
 import { AuthProviderService } from './services/authProvider.service';
 import { OAuth2Controller } from './controllers/oauth.controller';
 import { LoginAttempt } from './models/loginAttempt.model';
 import { LoginHistoryService } from './services/loginHistory.service';
+import { DynamicAuthModuleClass } from './auth.module-definition';
+import { EventsService } from './events/events.service';
 
-@Global()
 @Module({
   imports: [
     SequelizeModule.forFeature([AuthProviderAttributes, LoginAttempt]),
@@ -30,7 +30,6 @@ import { LoginHistoryService } from './services/loginHistory.service';
       }),
     }),
     UserModule,
-    NotificationModule,
   ],
   controllers: [LocalAuthController, OAuth2Controller],
   providers: [
@@ -40,6 +39,7 @@ import { LoginHistoryService } from './services/loginHistory.service';
     GoogleStrategy,
     AuthProviderService,
     LoginHistoryService,
+    EventsService,
   ],
 })
-export class AuthModule {}
+export class AuthModule extends DynamicAuthModuleClass {}

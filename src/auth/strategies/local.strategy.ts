@@ -6,15 +6,21 @@ import {
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { UserService } from 'src/user/services/user.service';
-import { LoginHistoryService } from '../services/loginHistory.service';
 import { AuthProviderType, LoginFailureReason } from '../types';
 import { Request } from 'express';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FailedLoginEvent } from '../events/events';
+import {
+  AuthModuleOptions,
+  InjectAuthOptions,
+} from '../auth.module-definition';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly userService: UserService,
-    private readonly loginHistoryService: LoginHistoryService,
+    private readonly emitter: EventEmitter2,
+    @InjectAuthOptions() private readonly authOptions: AuthModuleOptions,
   ) {
     super({ usernameField: 'identifier', passReqToCallback: true });
   }
@@ -31,28 +37,28 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     }
 
     if (!(await user.validatePassword(password))) {
-      this.loginHistoryService.log(
+      new FailedLoginEvent(
         user,
         AuthProviderType.LOCAL,
         req.ip,
-        false,
+        req.get('user-agent'),
         LoginFailureReason.INVALID_CREDENTIALS,
-      );
+      ).publish(this.emitter);
       throw new UnauthorizedException();
     }
 
     if (user.blocked) {
-      this.loginHistoryService.log(
+      new FailedLoginEvent(
         user,
         AuthProviderType.LOCAL,
         req.ip,
-        false,
+        req.get('user-agent'),
         LoginFailureReason.BLOCK,
-      );
+      ).publish(this.emitter);
       throw new ForbiddenException('blocked');
     }
 
-    if (!user.emailVerified) {
+    if (!user.emailVerified && this.authOptions.requireEmailVerification) {
       throw new UnauthorizedException('email verification required');
     }
 

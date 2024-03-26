@@ -15,6 +15,7 @@ export class LoginHistoryService {
     user: UserAttributes,
     type: AuthProviderType,
     address: string,
+    agent: string,
     success: boolean,
     failureReason?: LoginFailureReason,
   ) {
@@ -24,6 +25,7 @@ export class LoginHistoryService {
       address,
       success,
       failureReason,
+      agent,
     });
   }
 }

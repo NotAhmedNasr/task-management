@@ -1,18 +1,17 @@
-import { Transporter } from 'nodemailer';
 import { MailMessage } from '../types';
 
 export abstract class NotificationBase {
-  abstract send(): void | Promise<void>;
+  abstract send(): Promise<unknown>;
 }
 
 export class EmailNotification extends NotificationBase {
   constructor(
     private message: MailMessage,
-    private readonly transporter: Transporter,
+    private sendEmailFunc: (message: MailMessage) => Promise<unknown>,
   ) {
     super();
   }
   async send() {
-    return this.transporter.sendMail(this.message);
+    return this.sendEmailFunc(this.message);
   }
 }

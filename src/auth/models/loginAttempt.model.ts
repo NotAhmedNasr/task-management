@@ -45,6 +45,12 @@ export class LoginAttempt extends Model {
 
   @AllowNull(true)
   @Column({
+    type: DataType.STRING(200),
+  })
+  agent: string;
+
+  @AllowNull(true)
+  @Column({
     type: DataType.ENUM,
     values: Object.values(LoginFailureReason),
   })
