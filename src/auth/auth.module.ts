@@ -15,6 +15,7 @@ import { LoginAttempt } from './models/loginAttempt.model';
 import { LoginHistoryService } from './services/loginHistory.service';
 import { DynamicAuthModuleClass } from './auth.module-definition';
 import { EventsService } from './events/events.service';
+import { LogController } from './controllers/log.controller';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { EventsService } from './events/events.service';
     }),
     UserModule,
   ],
-  controllers: [LocalAuthController, OAuth2Controller],
+  controllers: [LocalAuthController, OAuth2Controller, LogController],
   providers: [
     AuthService,
     LocalStrategy,
