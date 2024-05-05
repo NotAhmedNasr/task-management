@@ -37,10 +37,11 @@ export class AuthService {
     new LinkAccountEvent(user).publish(this.emitter);
   }
 
-  async linkAccount(user: UserAttributes, data: Omit<RegisterDTO, 'email'>) {
+  async linkAccount(
+    user: UserAttributes,
+    data: Omit<RegisterDTO, 'email' | 'firstName' | 'lastName'>,
+  ) {
     user.username = data.username;
-    user.firstName = data.firstName;
-    user.lastName = data.lastName;
     user.password = data.password;
     await UserAttributes.hashPassword(user);
     user.confirmationToken = null;

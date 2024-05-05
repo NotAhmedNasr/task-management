@@ -78,7 +78,7 @@ export class EventsService {
         subject: 'Email Confirmation',
         html: await MailTemplateFactory.emailConfirmation(
           `${user.firstName} ${user.lastName}`,
-          `${this.authOptions.clientUrl}/auth/linkAccount?token=${user.confirmationToken}`,
+          `${this.authOptions.clientUrl}/auth/linkAccount?email=${user.email}&token=${user.confirmationToken}`,
         ),
       },
       this.authOptions.sendEmailFunction,
