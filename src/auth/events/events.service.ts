@@ -3,6 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import {
   AuthEventType,
   FailedLoginEvent,
+  LinkAccountEvent,
   LoginEvent,
   RegisterEvent,
 } from './events';
@@ -13,7 +14,7 @@ import {
   AuthModuleOptions,
   InjectAuthOptions,
 } from '../auth.module-definition';
-import { MailTemplateFactory } from '../utils/mailTemplateFactory';
+import { MailTemplateFactory } from '../utils/email/mailTemplateFactory';
 
 @Injectable()
 export class EventsService {
@@ -67,5 +68,25 @@ export class EventsService {
           console.error('failed to send confirmation message', err),
         );
     }
+  }
+
+  @OnEvent(AuthEventType.LINK_ACCOUNT)
+  async onLinkAccount({ user }: LinkAccountEvent) {
+    new EmailNotification(
+      {
+        to: user.email,
+        subject: 'Email Confirmation',
+        html: await MailTemplateFactory.emailConfirmation(
+          `${user.firstName} ${user.lastName}`,
+          `${this.authOptions.clientUrl}/auth/linkAccount?token=${user.confirmationToken}`,
+        ),
+      },
+      this.authOptions.sendEmailFunction,
+    )
+      .send()
+      .then(console.log)
+      .catch((err) =>
+        console.error('failed to send confirmation message', err),
+      );
   }
 }

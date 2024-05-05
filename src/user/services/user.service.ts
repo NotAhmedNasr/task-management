@@ -21,23 +21,31 @@ export class UserService {
     return this.userModel.findOne({ where: { id } });
   }
 
-  findByUsernameOrEmail(username: string, email: string, scope?: string) {
+  findByUsernameOrEmail(username: string, email: string, scope?: 'login') {
     return this.userModel.scope(scope).findOne({
       where: {
         [Op.or]: [
           {
-            username: username,
+            username,
           },
           {
-            email: email,
+            email,
           },
         ],
       },
     });
   }
 
-  findByEmail(email: string) {
+  findByUsername(username: string) {
     return this.userModel.findOne({
+      where: {
+        username,
+      },
+    });
+  }
+
+  findByEmail(email: string, scope?: 'login') {
+    return this.userModel.scope(scope).findOne({
       where: {
         email,
       },
@@ -53,7 +61,10 @@ export class UserService {
   }
 
   create(
-    registerDTO: RegisterDTO & { confirmationToken?: string },
+    registerDTO: RegisterDTO & {
+      confirmationToken?: string;
+      confirmationTokenExpiredAt?: Date;
+    },
     emailVerified = true,
   ) {
     return this.userModel.create({

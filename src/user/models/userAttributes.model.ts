@@ -1,4 +1,6 @@
 import * as bcrypt from 'bcrypt';
+import dayjs from 'dayjs';
+import ms from 'ms';
 import {
   Table,
   Model,
@@ -87,6 +89,10 @@ export class UserAttributes extends Model {
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   confirmationToken: string;
+
+  @Default(() => dayjs().add(ms('1d'), 'ms').toDate())
+  @Column(DataType.DATE)
+  confirmationTokenExpiredAt: Date;
 
   @HasMany(() => AuthProviderAttributes, { onDelete: 'CASCADE' })
   authProviders: AuthProviderAttributes[];

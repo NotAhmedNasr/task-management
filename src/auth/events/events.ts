@@ -6,6 +6,7 @@ export enum AuthEventType {
   LOGIN = 'auth.login',
   FAILED_LOGIN = 'auth.failedLogin',
   REGISTER = 'auth.register',
+  LINK_ACCOUNT = 'auth.linkAccount',
 }
 
 export class LoginEvent {
@@ -47,5 +48,13 @@ export class RegisterEvent {
 
   publish(emitter: EventEmitter2) {
     emitter.emit(AuthEventType.REGISTER, this);
+  }
+}
+
+export class LinkAccountEvent {
+  constructor(public user: UserAttributes) {}
+
+  publish(emitter: EventEmitter2) {
+    emitter.emit(AuthEventType.LINK_ACCOUNT, this);
   }
 }

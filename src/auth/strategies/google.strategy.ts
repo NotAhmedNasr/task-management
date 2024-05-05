@@ -54,6 +54,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           lastName: profile.name.familyName,
           password: null,
           confirmationToken: null,
+          confirmationTokenExpiredAt: null,
         })
         .then((data) => {
           new RegisterEvent(data, AuthProviderType.GOOGLE).publish(
