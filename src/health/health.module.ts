@@ -6,7 +6,7 @@ import { TerminusModule } from '@nestjs/terminus';
   imports: [
     TerminusModule.forRoot({
       errorLogStyle: 'pretty',
-      gracefulShutdownTimeoutMs: 10000,
+      gracefulShutdownTimeoutMs: 1000,
     }),
   ],
   controllers: [HealthController],
