@@ -117,6 +117,7 @@ export class LocalAuthController {
     };
   }
 
+  // Used to add local auth attributes (username, password) to accounts created using auth providers
   @Post('/linkAccountRequest')
   async linkAccountRequest(@Body() body: LinkAccountRequestDTO) {
     const user = await this.userService.findByEmail(body.email, 'login');
