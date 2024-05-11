@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 
 @ValidatorConstraint({ name: 'future date', async: false })
 export class DateInFutureValidator implements ValidatorConstraintInterface {
-  validate(date: string): boolean {
+  validate(date: string | Date): boolean {
     return dayjs().isBefore(dayjs(date));
   }
   defaultMessage?(validationArguments?: ValidationArguments): string {

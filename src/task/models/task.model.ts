@@ -13,7 +13,7 @@ import { TaskStatus } from '../types';
 import { UserAttributes } from 'src/user/models/userAttributes.model';
 import { BelongsToGetAssociationMixin } from 'sequelize';
 
-interface TaskAttributes {
+export interface TaskAttributes {
   id: string;
   title: string;
   description: string;

@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Task } from '../models/task.model';
+import { Task, TaskAttributes } from '../models/task.model';
 import { CreateTaskDto } from '../dto/createTask.dto';
 import { UserAttributes } from 'src/user/models/userAttributes.model';
 import { EditTaskDto } from '../dto/editTask.dto';
+import { GetTasksDto } from '../dto/getTasks.dto';
+import { WhereOptions } from 'sequelize';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class TaskService {
@@ -37,6 +40,52 @@ export class TaskService {
       where: {
         id,
       },
+    });
+  }
+
+  async findMany(
+    { filter, page = 1, pageSize = 10 }: GetTasksDto,
+    user: UserAttributes,
+  ) {
+    const where: WhereOptions<TaskAttributes> = {};
+    where[Op.or] = [
+      {
+        assigneeId: user.id,
+      },
+      {
+        createdById: user.id,
+      },
+    ];
+
+    if (filter.title) {
+      where.title = {
+        [Op.like]: `%${filter.title}%`,
+      };
+    }
+
+    if (filter.description) {
+      where.description = {
+        [Op.like]: `%${filter.description}%`,
+      };
+    }
+
+    if (filter.status) {
+      where.status = {
+        [Op.eq]: filter.status,
+      };
+    }
+
+    if (filter.dueAtFrom && filter.dueAtTo) {
+      where.dueAt = {
+        [Op.gte]: filter.dueAtFrom,
+        [Op.lte]: filter.dueAtTo,
+      };
+    }
+
+    return this.taskModel.findAndCountAll({
+      where,
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
     });
   }
 }
