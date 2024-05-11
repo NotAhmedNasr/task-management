@@ -1,6 +1,5 @@
 import {
   AllowNull,
-  AutoIncrement,
   BelongsTo,
   Column,
   DataType,
@@ -12,9 +11,10 @@ import {
 } from 'sequelize-typescript';
 import { TaskStatus } from '../types';
 import { UserAttributes } from 'src/user/models/userAttributes.model';
+import { BelongsToGetAssociationMixin } from 'sequelize';
 
 interface TaskAttributes {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: TaskStatus;
@@ -33,10 +33,10 @@ export class Task extends Model<
   TaskAttributes,
   Omit<TaskAttributes, 'id' | 'status'>
 > {
-  @AutoIncrement
+  @Default(DataType.UUIDV4)
   @PrimaryKey
-  @Column
-  id: number;
+  @Column(DataType.UUID)
+  id: string;
 
   @AllowNull(false)
   @Column(DataType.STRING(300))
@@ -72,4 +72,7 @@ export class Task extends Model<
 
   @BelongsTo(() => UserAttributes, 'assigneeId')
   assignee: UserAttributes;
+
+  declare getCreatedBy: BelongsToGetAssociationMixin<UserAttributes>;
+  declare getAssignee: BelongsToGetAssociationMixin<UserAttributes>;
 }
