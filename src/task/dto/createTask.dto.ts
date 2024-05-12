@@ -1,6 +1,8 @@
 import {
   IsDate,
+  IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
   Validate,
@@ -23,4 +25,8 @@ export class CreateTaskDto {
   @Validate(DateInFutureValidator)
   @Type(() => Date)
   dueAt: Date;
+
+  @IsOptional()
+  @IsUUID()
+  boardId?: string;
 }

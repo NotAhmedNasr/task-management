@@ -12,6 +12,7 @@ import {
 import { TaskStatus } from '../types';
 import { UserAttributes } from 'src/user/models/userAttributes.model';
 import { BelongsToGetAssociationMixin } from 'sequelize';
+import { Board } from './board.model';
 
 export interface TaskAttributes {
   id: string;
@@ -23,6 +24,7 @@ export interface TaskAttributes {
   createdBy: UserAttributes;
   assigneeId: number;
   assignee: UserAttributes;
+  boardId: string;
 }
 
 @Table({
@@ -72,6 +74,14 @@ export class Task extends Model<
 
   @BelongsTo(() => UserAttributes, 'assigneeId')
   assignee: UserAttributes;
+
+  @AllowNull(false)
+  @ForeignKey(() => Board)
+  @Column(DataType.UUID)
+  boardId: string;
+
+  @BelongsTo(() => Board, 'boardId')
+  board: Board;
 
   declare getCreatedBy: BelongsToGetAssociationMixin<UserAttributes>;
   declare getAssignee: BelongsToGetAssociationMixin<UserAttributes>;

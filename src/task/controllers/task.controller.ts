@@ -26,7 +26,6 @@ export class TaskController {
 
   @Post('/')
   async create(@Body() dto: CreateTaskDto, @User() user: UserAttributes) {
-    console.log('🚀 ~ TaskController ~ create ~ dto:', typeof dto.dueAt);
     const task = await this.taskService.create(dto, user);
     return { id: task.id };
   }

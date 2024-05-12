@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Task, TaskAttributes } from '../models/task.model';
 import { CreateTaskDto } from '../dto/createTask.dto';
@@ -7,17 +7,34 @@ import { EditTaskDto } from '../dto/editTask.dto';
 import { GetTasksDto } from '../dto/getTasks.dto';
 import { WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
+import { BoardService } from './board.service';
 
 @Injectable()
 export class TaskService {
-  constructor(@InjectModel(Task) private readonly taskModel: typeof Task) {}
+  constructor(
+    @InjectModel(Task) private readonly taskModel: typeof Task,
+    private readonly boardService: BoardService,
+  ) {}
   async create(dto: CreateTaskDto, user: UserAttributes) {
+    if (
+      dto.boardId &&
+      !(await this.boardService.isUserAllowed(dto.boardId, user))
+    ) {
+      throw new NotFoundException(
+        "Board doesn't exist or you don't have access",
+      );
+    }
+
+    const boardId =
+      dto.boardId ?? (await this.boardService.getUserPersonalBoard(user)).id;
+
     return this.taskModel.create({
       title: dto.title,
       description: dto.description,
       dueAt: dto.dueAt,
       createdById: user.id,
       assigneeId: user.id, // for now
+      boardId,
     });
   }
 
