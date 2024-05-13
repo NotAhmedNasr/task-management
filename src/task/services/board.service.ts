@@ -25,14 +25,26 @@ export class BoardService {
     });
   }
 
-  async isUserAllowed(boardId: string, user: UserAttributes) {
-    const board = await this.boardModel.findOne({
+  async isUserAllowed(board: Board, user: UserAttributes): Promise<boolean>;
+  async isUserAllowed(boardId: string, user: UserAttributes): Promise<boolean>;
+  async isUserAllowed(boardOrId: string | Board, user: UserAttributes) {
+    if (typeof boardOrId === 'string') {
+      boardOrId = await this.boardModel.findOne({
+        where: {
+          id: boardOrId,
+          createdById: user.id,
+        },
+        attributes: ['id'],
+      });
+    }
+    return boardOrId.createdById === user.id;
+  }
+
+  async getBoardById(boardId: string) {
+    return this.boardModel.findOne({
       where: {
         id: boardId,
-        createdById: user.id,
       },
     });
-
-    return !!board;
   }
 }

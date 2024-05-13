@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsUUID,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -33,6 +34,10 @@ class GetTasksFilter {
   @Type(() => Date)
   @IsOptional()
   dueAtTo?: Date;
+
+  @IsUUID()
+  @IsOptional()
+  boardId?: string;
 }
 
 export class GetTasksDto extends PaginationDto {

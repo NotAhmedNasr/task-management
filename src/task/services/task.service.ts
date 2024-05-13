@@ -99,6 +99,15 @@ export class TaskService {
       };
     }
 
+    if (
+      filter.boardId &&
+      (await this.boardService.isUserAllowed(filter.boardId, user))
+    ) {
+      where.boardId = {
+        [Op.eq]: filter.boardId,
+      };
+    }
+
     return this.taskModel.findAndCountAll({
       where,
       offset: (page - 1) * pageSize,
