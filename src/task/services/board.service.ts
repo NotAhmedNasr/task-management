@@ -25,6 +25,14 @@ export class BoardService {
     });
   }
 
+  async getAllUserBoards(user: UserAttributes) {
+    return this.boardModel.findAndCountAll({
+      where: {
+        createdById: user.id,
+      },
+    });
+  }
+
   async isUserAllowed(board: Board, user: UserAttributes): Promise<boolean>;
   async isUserAllowed(boardId: string, user: UserAttributes): Promise<boolean>;
   async isUserAllowed(boardOrId: string | Board, user: UserAttributes) {

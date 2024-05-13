@@ -25,4 +25,19 @@ export class BoardController {
 
     return board;
   }
+
+  @Get('/')
+  async getMany(@User() user: UserAttributes) {
+    const result = await this.boardService.getAllUserBoards(user);
+    return {
+      data: result.rows,
+      meta: {
+        pagination: {
+          page: 0,
+          pageSize: 0,
+          total: result.count,
+        },
+      },
+    };
+  }
 }
