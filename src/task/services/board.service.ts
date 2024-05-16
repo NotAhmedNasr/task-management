@@ -42,7 +42,7 @@ export class BoardService {
           id: boardOrId,
           createdById: user.id,
         },
-        attributes: ['id'],
+        attributes: ['id', 'createdById'],
       });
     }
     return boardOrId.createdById === user.id;

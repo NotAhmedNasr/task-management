@@ -12,12 +12,12 @@ import { Type } from 'class-transformer';
 
 export class CreateTaskDto {
   @MinLength(2)
-  @MaxLength(300)
+  @MaxLength(100)
   @IsString()
   title: string;
 
   @MinLength(2)
-  @MaxLength(10000)
+  @MaxLength(2000)
   @IsString()
   description: string;
 
