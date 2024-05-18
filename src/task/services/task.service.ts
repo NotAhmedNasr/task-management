@@ -48,7 +48,9 @@ export class TaskService {
     if (dto.dueAt) {
       task.dueAt = dto.dueAt;
     }
-
+    if (dto.status) {
+      task.status = dto.status;
+    }
     return task.save();
   }
 
