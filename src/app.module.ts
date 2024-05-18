@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { NotificationModule } from './notification/notification.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EmailService } from './notification/services/email.service';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { EmailService } from './notification/services/email.service';
       }),
       inject: [ConfigService, EmailService],
     }),
+    TaskModule,
   ],
 })
 export class AppModule {}
